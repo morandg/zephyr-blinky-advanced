@@ -1,0 +1,1 @@
+Zephyr advanced blinky example.
