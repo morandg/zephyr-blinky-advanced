@@ -1,0 +1,11 @@
+manifest:
+  remotes:
+    - name: zephyr
+      url-base: git@github.com:zephyrproject-rtos
+  projects:
+    - name: zephyr
+      remote: zephyr
+      revision: 4256cd41df6c60f1832fd2deb14edc30ac7debab
+      import: true
+  self:
+    path: blinky-advanced
