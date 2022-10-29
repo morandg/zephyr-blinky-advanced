@@ -1,0 +1,7 @@
+config BLINK_INTERVAL_MS
+	int "Blink interval"
+	default 100
+	help
+	  Blink interval in milliseconds
+
+source "Kconfig.zephyr"
