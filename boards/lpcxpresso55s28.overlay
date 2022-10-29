@@ -1,5 +1,19 @@
 / {
 	aliases{
 		button-on = &user_button_2;
+		blinky-led = &blue_led;
 	};
+};
+
+/* Fix LEDs active LOW on this hardware */
+&green_led {
+	gpios = <&gpio1 7 GPIO_ACTIVE_LOW>;
+};
+
+&blue_led {
+	gpios = <&gpio1 4 GPIO_ACTIVE_LOW>;
+};
+
+&red_led {
+	gpios = <&gpio1 6 GPIO_ACTIVE_LOW>;
 };
