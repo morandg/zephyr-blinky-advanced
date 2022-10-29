@@ -6,19 +6,28 @@ LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 
 static const struct gpio_dt_spec button =
 	GPIO_DT_SPEC_GET(DT_ALIAS(button_on), gpios);
+static const struct gpio_dt_spec led =
+	GPIO_DT_SPEC_GET(DT_ALIAS(blinky_led), gpios);
 static struct gpio_callback button_cb_data;
 static struct k_timer blink_timer;
 static bool next_blink_value = true;
 static int blink_interval_ms = CONFIG_BLINK_INTERVAL_MS;
 
-static void blink_timer_expired(struct k_timer *timer_id) {
-	if (next_blink_value) {
-		LOG_INF("ON");
-	} else {
-		LOG_INF("OFF");
-	}
+static int toggle_led() {
+	int status;
 
+	LOG_INF("Set LED %s", next_blink_value ? "on" : "off");
+	status = gpio_pin_set_dt(&led, next_blink_value);
+	if (status) {
+		LOG_ERR("Could not set LED value: %i", status);
+	}
 	next_blink_value = !next_blink_value;
+
+	return status;
+}
+
+static void blink_timer_expired(struct k_timer *timer_id) {
+	toggle_led();
 }
 
 static void blink_start(void) {
@@ -29,6 +38,8 @@ static void blink_start(void) {
 
 static void blink_stop(void) {
 	LOG_INF("Stop blinking");
+	next_blink_value = false;
+	toggle_led();
 	k_timer_stop(&blink_timer);
 }
 
@@ -74,10 +85,26 @@ static int init_button(void) {
 	return status;
 }
 
+static int init_led(void) {
+	int status;
+
+	status = gpio_pin_configure_dt(&led, GPIO_OUTPUT_INACTIVE);
+	if (status) {
+		LOG_ERR("Could not configure button input: %i", status);
+	}
+
+	return status;
+}
+
 void main(void) {
 	int status;
 
 	LOG_INF("Starting blinky advanced");
+
+	status = init_led();
+	if (status) {
+		LOG_WRN("Could not intialize LED: %i", status);
+	}
 
 	k_timer_init(&blink_timer, blink_timer_expired, NULL);
 
