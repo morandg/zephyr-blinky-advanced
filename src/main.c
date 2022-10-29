@@ -1,3 +1,4 @@
+#include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 
@@ -6,6 +7,30 @@ LOG_MODULE_REGISTER(main, CONFIG_LOG_DEFAULT_LEVEL);
 static const struct gpio_dt_spec button =
 	GPIO_DT_SPEC_GET(DT_ALIAS(button_on), gpios);
 static struct gpio_callback button_cb_data;
+static struct k_timer blink_timer;
+static bool next_blink_value = true;
+static int blink_interval_ms = CONFIG_BLINK_INTERVAL_MS;
+
+static void blink_timer_expired(struct k_timer *timer_id) {
+	if (next_blink_value) {
+		LOG_INF("ON");
+	} else {
+		LOG_INF("OFF");
+	}
+
+	next_blink_value = !next_blink_value;
+}
+
+static void blink_start(void) {
+	LOG_INF("Start blinkinking");
+	next_blink_value = true;
+	k_timer_start(&blink_timer, K_MSEC(0), K_MSEC(blink_interval_ms));
+}
+
+static void blink_stop(void) {
+	LOG_INF("Stop blinking");
+	k_timer_stop(&blink_timer);
+}
 
 static void button_pressed(const struct device *dev, struct gpio_callback *cb,
 						   uint32_t pins) {
@@ -16,7 +41,13 @@ static void button_pressed(const struct device *dev, struct gpio_callback *cb,
 		LOG_ERR("Could not get button pin status: %i", status);
 		return;
 	}
+
 	LOG_INF("Button status %i", status);
+	if (status) {
+		blink_start();
+	} else {
+		blink_stop();
+	}
 }
 
 static int init_button(void) {
@@ -47,6 +78,9 @@ void main(void) {
 	int status;
 
 	LOG_INF("Starting blinky advanced");
+
+	k_timer_init(&blink_timer, blink_timer_expired, NULL);
+
 	status = init_button();
 	if (status) {
 		LOG_WRN("Could not intialize button ON: %i", status);
