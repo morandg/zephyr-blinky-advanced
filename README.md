@@ -17,3 +17,16 @@ west build -b lpcxpresso55s28 blinky-advanced/
 ```sh
 west flash
 ```
+
+# Porting this app
+To port this application to other boards, add an device tree overlay with the
+following aliases
+
+```c
+/ {
+	aliases{
+		button-on = &some_gpio_button;
+		blinky-led = &some_gpio_led;
+	};
+};
+```
