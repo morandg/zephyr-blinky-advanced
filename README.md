@@ -19,7 +19,7 @@ west flash
 ```
 
 # Porting this app
-To port this application to other boards, add an device tree overlay with the
+To port this application to other boards, add a device tree overlay with the
 following aliases
 
 ```c
